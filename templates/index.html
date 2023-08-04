@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>TotalFit</title>
+
+  <link rel="stylesheet" href="/static/bootstrap.css">
+
+</head>
+
+  <body>
+    <div class="title"><h1>TotalFit Registration</h1></div>
+    
+    {% for message in get_flashed_messages() %}
+        <h2>{{ message }}</h2>
+    {% endfor %}
+
+    <form action="{{ url_for('index') }}" method="POST" id="form_member">
+      {{ form_member.hidden_tag() }}
+
+      {% for field in form_member if field.widget.input_type != 'hidden' %}
+        <p>
+          {{ field.name }}
+          {{ field }}
+
+          {% for error in field.errors %}
+            <span class="text-danger">{{ error }}</span>
+          {% endfor %}
+        </p>
+
+      {% endfor %}
+
+      <button class="btn btn-primary btn-block btn-lg">Register</button>
+    </form>
+
+
+    <form action="{{ url_for('index') }}" method="POST" id="form_class">
+      {{ form_class.hidden_tag() }}
+
+      {% for field in form_class if field.widget.input_type != 'hidden' %}
+        <p>
+          {{ field.name }}
+          {{ field }}
+
+          {% for error in field.errors %}
+            <span class="text-danger">{{ error }}</span>
+          {% endfor %}
+        </p>
+
+      {% endfor %}
+
+      <button class="btn btn-primary btn-block btn-lg">Join Class</button>
+    </form>
+
+  </body>
+  <script src="https://unpkg.com/jquery"></script>
+  <script src="https://unpkg.com/axios/dist/axios.js"></script>
+  <script src="static/script.js"></script>
+</html>
