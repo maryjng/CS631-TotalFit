@@ -18,7 +18,8 @@ Each class has a limited number of seat and the reservation is on first comes fi
 There are two forms. One is to register a member and requires name, address, and there is a dropdown menu of 4 membership types to choose from. The other form is to signup for an existing class. An existing member ID has to be typed in and a class is picked form a dropdown menu of existing ones. There is a check for if a member already registered for a class and if the class is already at max capacity.
 
 ER Diagram
-![TotalFit](https://github.com/maryjng/CS631-TotalFit/assets/68235230/5f4b6879-807a-4c35-921e-debf346c16d5)
+![TotalFitFinal](https://github.com/maryjng/CS631-TotalFit/assets/68235230/1055a4f6-a44e-4f6e-86c9-852e47ec108b)
+
 
 
 Screenshot of Application. There are two forms.
