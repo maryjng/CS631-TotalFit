@@ -1,5 +1,5 @@
 CREATE TABLE Member (
- MemberID INT PRIMARY KEY,
+ Member_ID INT PRIMARY KEY,
  Member_Name VARCHAR(255),
  Address VARCHAR(255),
  Registration_Date DATE,
@@ -13,57 +13,87 @@ CREATE TABLE Membership (
 );
 
 CREATE TABLE Exercise (
- ExerciseID INT PRIMARY KEY,
+ Exercise_ID INT PRIMARY KEY,
  Name VARCHAR(255),
  Exercise_Type VARCHAR(50),
  Descriptor VARCHAR(255)
 );
 
 CREATE TABLE Class (
- ClassID INT PRIMARY KEY,
- RoomNumber VARCHAR(255),
+ Class_ID INT PRIMARY KEY,
+ Room_Number VARCHAR(255),
  Building VARCHAR(255),
- InstructorID INT,
+ Instructor_ID INT,
  Start_Time TIMESTAMP,
  Duration INT,
  Max_Members INT,
- FOREIGN KEY (Building, RoomNumber) REFERENCES Room(Building, RoomNumber),
- FOREIGN KEY (InstructorID) REFERENCES Instructor(InstructorID)
+ FOREIGN KEY (Building, Room_Number) REFERENCES Room(Building, Room_Number),
+ FOREIGN KEY (Instructor_ID) REFERENCES Instructor(Instructor_ID)
 );
 
 
 CREATE TABLE Member_Class (
-    MemberID INT NOT NULL,
-    ClassID INT NOT NULL,
+    Member_ID INT NOT NULL,
+    Class_ID INT NOT NULL,
     Registration_Date DATE,
-    CONSTRAINT PK_Member_Class PRIMARY KEY (MemberID, ClassID),
-    FOREIGN KEY (MemberID) REFERENCES Member(MemberID),
-    FOREIGN KEY (ClassID) REFERENCES Class(ClassID)   
+    CONSTRAINT PK_Member_Class PRIMARY KEY (Member_ID, Class_ID),
+    FOREIGN KEY (Member_ID) REFERENCES Member(Member_ID),
+    FOREIGN KEY (Class_ID) REFERENCES Class(Class_ID)   
 )
 
 CREATE TABLE Room (
  Building VARCHAR(255),
- RoomNumber VARCHAR(50),
- CONSTRAINT PK_Room PRIMARY KEY (Building, RoomNumber)
+ Room_Number VARCHAR(50),
+ CONSTRAINT PK_Room PRIMARY KEY (Building, Room_Number)
 );
 
 CREATE TABLE Instructor (
- InstructorID INT PRIMARY KEY,
+ Instructor_ID INT PRIMARY KEY,
  Name VARCHAR(255),
- EmploymentType VARCHAR(50)
+ Employment_Type VARCHAR(50)
 );
 
 CREATE TABLE External_Instructor (
-    InstructorID INT PRIMARY KEY,
+    Instructor_ID INT PRIMARY KEY,
     Name VARCHAR(255),
     Wage DECIMAL(10,2),
     Hours INT,
-    FOREIGN KEY (InstructorID) REFERENCES Instructor(InstructorID)
+    FOREIGN KEY (Instructor_ID) REFERENCES Instructor(Instructor_ID)
 )
 
 CREATE TABLE Internal_Instructor (
-    InstructorID INT PRIMARY KEY,
+    Instructor_ID INT PRIMARY KEY,
     Name VARCHAR(255),
     Salary INT,
-    FOREIGN KEY (InstructorID) REFERENCES Instructor(InstructorID)
+    FOREIGN KEY (Instructor_ID) REFERENCES Instructor(Instructor_ID)
 )
+
+
+
+CREATE OR REPLACE FUNCTION check_class_capacity()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_capacity INT;
+    max_capacity INT;
+BEGIN
+    SELECT COUNT(DISTINCT Member_ID) INTO current_capacity
+    FROM Member_Class
+    WHERE Class_ID = NEW.Class_ID;
+
+    SELECT Max_Members INTO max_capacity
+    FROM "Class"
+    WHERE Class_ID = NEW.Class_ID;
+
+    IF current_capacity >= max_capacity THEN
+        RAISE EXCEPTION 'Class is at maximum capacity. Cannot insert.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER before_insert_class_member
+BEFORE INSERT ON Member_Class
+FOR EACH ROW
+EXECUTE FUNCTION check_class_capacity();
+

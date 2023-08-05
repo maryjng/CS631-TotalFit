@@ -1,8 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKeyConstraint
 from datetime import datetime
-from sqlalchemy.exc import IntegrityError
-
+from sqlalchemy.exc import IntegrityError, InternalError
+from custom_exceptions import MemberAlreadyRegisteredError 
 
 db = SQLAlchemy()
 
@@ -12,7 +12,7 @@ class Member(db.Model):
     member_id = db.Column(db.Integer, primary_key=True)
     member_name = db.Column(db.String(255))
     address = db.Column(db.String(255))
-    registration_date = db.Column(db.Date)
+    registration_date = db.Column(db.DateTime)
     membership_type = db.Column(db.ForeignKey("Membership.membership_type", onupdate="CASCADE", ondelete="CASCADE"))
 
     @classmethod
@@ -90,7 +90,7 @@ class MemberClass(db.Model):
 
     member_id = db.Column(db.Integer, db.ForeignKey("Member.member_id"), primary_key=True)
     class_id = db.Column(db.Integer, db.ForeignKey("Class.class_id"), primary_key=True)
-    registration_date = db.Column(db.Date)
+    registration_date = db.Column(db.DateTime)
 
     
     @classmethod
@@ -101,15 +101,16 @@ class MemberClass(db.Model):
             check_register = db.session.query(MemberClass).filter_by(member_id=member_id, class_id=class_id).first()
 
             if check_register:
-                raise IntegrityError("Member already registered.")
+                raise MemberAlreadyRegisteredError()
             else:
                 member_class = MemberClass(member_id=member_id, class_id=class_id, registration_date=datetime.now())
-
                 db.session.add(member_class)
+                db.session.commit()
                 return member_class
         except IntegrityError as e:
-            print(e)
-
+            raise e
+        except InternalError as e:
+            raise e
 
 def connect_db(app):
     db.app = app

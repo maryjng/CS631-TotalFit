@@ -2,6 +2,7 @@ from sqlalchemy.exc import IntegrityError
 from flask import Flask, request, render_template, flash, redirect, url_for
 from forms import MemberRegistration, ClassSignup
 from models import db, connect_db, Member, ExerciseClass, MemberClass
+from custom_exceptions import MemberAlreadyRegisteredError 
 
 app = Flask(__name__)
 
@@ -50,12 +51,13 @@ def index():
             if check_member:
                 try:
                     res = MemberClass.register_member(form_class.class_id.data, form_class.member_id.data)
-
                     db.session.commit()
 
-                    flash(f"Successfully registered for class {form_class.class_id.data}")
-                except:
+                    flash(f"Successfully registered for Class #{form_class.class_id.data}")
+                except MemberAlreadyRegisteredError:
                     flash("You already registered for this class.")
+                except:
+                    flash("The class is full.")
             else:
                 flash(f"Please check your Member ID.")
 
